@@ -6,8 +6,8 @@ using namespace std;
 
 struct point
 {
-	int x;
-	int y;
+	ll x;
+	ll y;
 };
 
 struct node
@@ -22,7 +22,7 @@ struct node* createnode (){
 	return newnode;
 }
 
-void addFirst(struct node** head, int x, int y ){
+void addFirst(struct node** head, ll x, ll y ){
 
 	struct node* newnode=createnode();
 	newnode->p.x=x;
@@ -32,7 +32,28 @@ void addFirst(struct node** head, int x, int y ){
 
 }
 
+long long search (struct node* head, ll x, ll y){
+
+	struct node* temp;
+	temp=head;
+	long long cnt=0;
+	while(temp!=NULL){
+		if (temp->p.x==x && temp->p.y==y)cnt++;
+		temp=temp->next;
+
+	}
+
+	//if (cnt==0)cout<<"-1"<<endl;
+
+	return cnt;
+}
+
 void delFirst(struct node** head){
+
+      if(*head==NULL){
+            cout<<"-1"<<endl;
+            return;
+      }
 
 	struct node*temp;
 
@@ -41,23 +62,13 @@ void delFirst(struct node** head){
 	free(temp);
 }
 
-int search (struct node* head, int x, int y){
+void del(struct node** head, ll x, ll y){
 
-	struct node* temp;
-	temp=head;
-	int cnt=0;
-	while(temp!=NULL){
-		if (temp->p.x==x && temp->p.y==y)cnt++;
-		temp=temp->next;
-
+	if (search(*head, x, y)==0){
+            cout<<"-1"<<endl;
+            return;
 	}
 
-	return cnt;
-}
-
-void del(struct node** head, int x, int y){
-
-	if (search(*head, x, y)==0)return;
 	else{
 
 		struct node* temp;
@@ -79,26 +90,31 @@ void del(struct node** head, int x, int y){
 
 }
 
-void searchd (struct node* head, int d){
+void searchd (struct node* head, long double d){
 
 	struct node* temp;
 	temp=head;
+	ll ctr=0;
 	while(temp!=NULL){
 
 		if((temp->p.x)*(temp->p.x)+(temp->p.y)*(temp->p.y)<=(d*d)){
-			cout<<"("<<temp->p.x<<","<<temp->p.y<<")"<<" ";
+			ctr++;
 		}
 		temp=temp->next;
 	}
-	cout<<endl;
+	if(ctr>0){
+            cout<<ctr<<endl;
+	}
+
+	else cout<<"-1"<<endl;
 
 }
 
-int length (struct node*head){
+long long length (struct node*head){
 
 	struct node* temp;
 	temp=head;
-	int l=0;
+	ll l=0;
 
 	while (temp!=NULL){
 		l++;
@@ -107,13 +123,27 @@ int length (struct node*head){
  return l;
 }
 
+void print(struct node *start){
+      struct node *temp=start;
+
+      while(temp!=NULL){
+
+            cout<<temp->p.x<<" "<<temp->p.y<<endl;
+            temp=temp->next;
+
+      }
+
+
+}
+
 int main(){
 
 	long long q;
 
 	cin >>q;
 
-	int f, x, y, d;
+	ll f, x, y;
+	long double d;
 
 	struct node* head=NULL;
 
@@ -147,7 +177,11 @@ int main(){
 
 			case 5: {
 				cin>>x>>y;
-				cout<<search(head, x, y)<<endl;
+				ll ct=search(head, x, y);
+				if (ct>0){
+                              cout<<"True"<<endl;
+				}
+				else cout<<"False"<<endl;
 				break;
 			}
 
@@ -156,7 +190,10 @@ int main(){
 				break;
 			}
 
+
 		}
+
+            //print(head);
 
 	}
 
