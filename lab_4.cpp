@@ -204,6 +204,11 @@ struct tree* maketree ( string  expr){
 			newnode=maketree(expr.substr(1, expr.length()-2));
 		}
 
+		else if (expr[0]=='-'){
+
+                  newnode=maketree("0"+expr);
+		}
+		
 		else{
 			newnode->data='n';
 				
