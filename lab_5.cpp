@@ -1,358 +1,238 @@
-#include<bits/stdc++.h>
-using namespace std;
-
+#include <bits/stdc++.h>
 #define ll long long
-#define REP(i,a,b) for(ll i=a;i<b;i++)
+#define REP(i,a,b) for(int i=a;i<b;i++)
+using namespace std;
+#define INF std::numeric_limits<long long>::max()
 
-struct tree
-{
-	char data;
-	string var;
-	int num;
-	struct tree* left;
-	struct tree* right;
+struct tree {
+
+      string val;
+      struct tree *left;
+      struct tree *right;
+
 };
 
-struct tree* createnode (){
-
-	struct tree * newnode =(struct tree*)malloc(sizeof(struct tree));
-	return newnode;
+map<string, ll> var;
+int flag=0;
+ll stolla(string a){
+      if(a[0]=='0'||a[0]=='1'||a[0]=='2'||a[0]=='3'||a[0]=='4'||a[0]=='5'||a[0]=='6'||a[0]=='7'||a[0]=='8'||a[0]=='9')return stoll(a);
+      else if(var.find(a)==var.end() || var[a]==INF){flag=1;return INF;}
+      else return var[a];
 }
 
-int convert (string dig){
+vector<string> postfix(string s){
+      vector<string> output;
+      stack<char> signs;
+      REP(i,0,s.length()){
 
-	int i=0;
-	int num=0;
-	while((dig[i]-'0')>=0 && (dig[i]-'0')<10){
-		num*=10;
-		num+=dig[i]-'0';
-		i++;
-	}
+            if(s[i]!='+'&&s[i]!='-'&&s[i]!='*'&&s[i]!='/'&&s[i]!='^'&&s[i]!='('&&s[i]!=')'){
 
-	return num;
+                        string a;
+                        ll j;
+                        for(j=i; j<s.length(); j++){
+                              if(s[j]!='+'&&s[j]!='-'&&s[j]!='*'&&s[j]!='/'&&s[j]!='^'&&s[j]!='('&&s[j]!=')')a+=s[j];
+                              else break;
+                        }
+                        output.push_back(a);
+                        i=j-1;
+
+            } else if(s[i]=='+'||s[i]=='-'){
+                  if((i==0&&s[i]=='-')||(i!=0&&s[i]=='-'&&(s[i-1] =='+'||s[i-1]=='-'||s[i-1]=='*'||s[i-1]=='/'||s[i-1]=='^'||s[i-1]=='('))){
+                        signs.push('$');
+                  } else{
+                        if(signs.empty())signs.push(s[i]);
+                        else {
+                              while(!signs.empty()&&signs.top()!='('){
+                                    string a;
+                                    a+=signs.top();
+                                    signs.pop();
+                                    output.push_back(a);
+                              }
+                              signs.push(s[i]);
+                        }
+                  }
+            } else if(s[i]=='*'||s[i]=='/'){
+                  if(signs.empty())signs.push(s[i]);
+                  else{
+                        while(!signs.empty()&&signs.top()!='+'&&signs.top()!='-'&&signs.top()!='('){
+                              string a;
+                              a+=signs.top();
+                              signs.pop();
+                              output.push_back(a);
+                        }
+                        signs.push(s[i]);
+                  }
+            } else if(s[i]=='^'){
+                  if(signs.empty())signs.push(s[i]);
+                  else{
+                        while(!signs.empty()&&(signs.top()=='$')){
+                              string a;
+                              a+=signs.top();
+                              signs.pop();
+                              output.push_back(a);
+                        }
+                        signs.push(s[i]);
+                  }
+            } else if(s[i]=='(')signs.push(s[i]);
+            else if(s[i]==')'){
+                  while(signs.top()!='('){
+                              string a;
+                              a+=signs.top();
+                              signs.pop();
+                              output.push_back(a);
+                  }signs.pop();
+            } else if(s[i]=='^'){
+                  while(!signs.empty()&&signs.top()=='$'){
+                        string a;
+                        a+=signs.top();
+                        signs.pop();
+                        output.push_back(a);
+                  }signs.push(s[i]);
+            }
+      }
+      while(!signs.empty()){
+            string a;
+            a+=signs.top();
+            signs.pop();
+            output.push_back(a);
+      }
+      return output;
 }
 
-struct tree* maketree ( string  expr){
+struct tree* createTree(){
+      struct tree *temp=(struct tree*)malloc(sizeof(struct tree));
+      temp->left=NULL;
+      temp->right=NULL;
+      return temp;
+}
 
-	struct tree * newnode=createnode();
+void makeTree(struct tree **root, vector<string> s){
+      stack<struct tree *> a;
+      REP(i,0,s.size()){
+            if(s[i][0]!='+'&&s[i][0]!='-'&&s[i][0]!='*'&&s[i][0]!='/'&&s[i][0]!='^'&&s[i][0]!='$'){
+                  struct tree *temp=createTree();
+                  temp->val=s[i];
+                  a.push(temp);
+            } else {
+                  if(s[i]!="$"){
+                        struct tree *temp=createTree();
+                        temp->val=s[i];
+                        temp->right=a.top();
+                        a.pop();
+                        temp->left=a.top();
+                        a.pop();
+                        a.push(temp);
+                  } else{
+                        if(((a.top())->val)[0]=='$')(a.top())->val=(((a.top())->val).substr(1));
 
-	int brac=0;
-	int opflg=0;
+                        else (a.top())->val="$"+((a.top())->val);
 
-	//cout<<expr<<" "<<"rttTH"<<endl;
 
-	/*for (int i=0; i<expr.length(); i++ ){
-		if(expr[i]=='('){
-			brac++;
-		}
-		if(expr[i]==')'){
-			brac--;
-		}
-		if(brac>0){
-			continue;
-		}
-		brac=0;
-		if(expr[i]=='+' || expr[i]=='-'){
-			opflg=1;
-			newnode->data=expr[i];
-			//cout<<"ADD"<<endl;
-			newnode->left=maketree(expr.substr(0, i));
-			newnode->right=maketree(expr.substr(i+1));
-			return newnode;
-		}
-	}
-	*/
 
-	if(expr[0]=='-'){
-
-            newnode=maketree("0-("+expr.substr(1)+")");
-            return newnode;
-
+                  }
+            }
       }
 
-	for (int i=expr.length()-1; i>=0; i-- ){
+      *root=a.top();
 
-		if(expr[i]==')'){
-			brac++;
-		}
+      return;
 
-		if(expr[i]=='('){
-			brac--;
-		}
-
-		if(brac>0){
-			continue;
-		}
-		brac=0;
-
-		if(expr[i]=='-' || expr[i]=='+'){
-
-			opflg=1;
-			newnode->data=expr[i];
-			//cout<<"SUB"<<endl;
-			newnode->left=maketree(expr.substr(0, i));
-			newnode->right=maketree(expr.substr(i+1));
-
-			return newnode;
-		}
-
-
-	}
-
-
-
-
-	/*for (int i=0; i<expr.length(); i++ ){
-		if(expr[i]=='('){
-			brac++;
-		}
-		if(expr[i]==')'){
-			brac--;
-		}
-		if(brac>0){
-			continue;
-		}
-		brac=0;
-		if(expr[i]=='*'){
-			opflg=1;
-			newnode->data=expr[i];
-			//cout<<"MUL"<<endl;
-			newnode->left=maketree(expr.substr(0, i));
-			newnode->right=maketree(expr.substr(i+1));
-			return newnode;
-		}
-	}
-*/
-
-	for (int i=expr.length()-1; i>=0; i-- ){
-
-		if(expr[i]==')'){
-			brac++;
-		}
-
-		if(expr[i]=='('){
-			brac--;
-		}
-
-		if(brac>0){
-			continue;
-		}
-		brac=0;
-
-		if(expr[i]=='/' || expr[i]=='*'){
-
-			opflg=1;
-			newnode->data=expr[i];
-			//cout<<"DIV"<<endl;
-			newnode->left=maketree(expr.substr(0, i));
-			newnode->right=maketree(expr.substr(i+1));
-
-			return newnode;
-		}
-
-
-	}
-
-	for (int i=0; i<expr.length(); i++ ){
-
-		if(expr[i]=='('){
-			brac++;
-		}
-
-		if(expr[i]==')'){
-			brac--;
-		}
-
-		if(brac>0){
-			continue;
-		}
-		brac=0;
-
-		if(expr[i]=='^'){
-
-			opflg=1;
-			newnode->data=expr[i];
-			//cout<<"POW"<<endl;
-			newnode->left=maketree(expr.substr(0, i));
-			newnode->right=maketree(expr.substr(i+1));
-
-			return newnode;
-		}
-
-
-	}
-
-	if(opflg==0){
-
-		if(expr[0]=='('){
-			newnode=maketree(expr.substr(1, expr.length()-2));
-		}
-
-
-		else{
-                  if(expr[0]<='9' && expr[0]>='0'){
-                        newnode->data='n';
-                        newnode->num=convert(expr);
-                        newnode->left=NULL;
-                        newnode->right=NULL;
-                  }
-                  else{
-
-                        newnode->data='v';
-                        //cout<<"set"<<expr<<endl;
-                        newnode->var=expr;
-
-                        newnode->left=NULL;
-
-                        newnode->right=NULL;
-
-
-                  }
-		}
-	}
-
-return newnode;
 
 }
 
-int* eval(tree* node, string a[], int arr[], int* err, int ctr){
+void inorder(struct tree*root){
 
-	int *val;
-	val=(int*)malloc(sizeof(int));
 
-	if(node->data !='n' && node->data !='v' )
+      if(root==NULL)return;
+      cout<<"lol"<<endl;
+      inorder(root->left);
+      cout<<root->val<<endl;
+      inorder(root->right);
+}
 
-	switch (node->data){
+ll powe(ll a, ll b){
+      if(b==0)return 1;
+      else if(b<0)return 0;
+      else return a*powe(a,b-1);
+}
 
-		case '+' : *val= *(eval(node->left, a, arr, err, ctr))+(*eval(node->right, a, arr, err, ctr));
-					break;
-		case '*' : *val= *(eval(node->left, a, arr, err, ctr))*(*eval(node->right, a, arr, err, ctr));
-					break;
-		case '-' : *val= *(eval(node->left, a, arr, err, ctr))-(*eval(node->right, a, arr, err, ctr));
-					break;
-		case '/' : *val= *(eval(node->left, a, arr, err, ctr))/(*eval(node->right, a, arr, err, ctr));
-					break;
-		case '^' : *val= (int)pow((int)*(eval(node->left, a, arr, err, ctr)),((int)*eval(node->right, a, arr, err, ctr)));
-					break;
+ll evaluate(struct tree *root){
+      if(root->val=="+"){
+            ll x=evaluate(root->left);
+            if(flag)return INF;
+            ll y=evaluate(root->right);
+            if(flag)return INF;
+            return x+y;
+      }
+      else if(root->val=="-"){
+            ll x=evaluate(root->left);
+            if(flag)return INF;
+            ll y=evaluate(root->right);
+            if(flag)return INF;
+            return x-y;
+      }
+      else if(root->val=="*"){
+            ll x=evaluate(root->left);
+            if(flag)return INF;
+            ll y=evaluate(root->right);
+            if(flag)return INF;
+            return x*y;
+      }
+      else if(root->val=="/"){
+            ll x=evaluate(root->left);
+            if(flag)return INF;
+            ll y=evaluate(root->right);
+            if(flag)return INF;
+            return x/y;
+      }
+      else if(root->val=="^"){
+            ll x=evaluate(root->left);
+            if(flag)return INF;
+            ll y=evaluate(root->right);
+            if(flag)return INF;
+            return powe(evaluate(root->left), evaluate(root->right));
 
-	}
+      }
+      else{
 
-	else if (node->data !='v'){
-		//cout<<node->num<<"cry"<<endl;
-		*val=node->num;
-	}
-	else{
-            ll i=0;
-
-            while(i<=ctr){
-
-                  if (a[i]==node->var){
-                  		//cout<<arr[i]<<endl;
-                        *val=arr[i];
-                        break;
-                  }
-                  i++;
+            if((root->val)[0]=='$'){
+                        ll x=-1*stolla((root->val).substr(1));
+                        return x;
             }
-            if(i==ctr+1){
-            	  
-                  *err=1;
-            }
-
-	}
-//cout<<*val<<endl;
-return val;
-
+            else return stolla(root->val);
+      }
 }
 
 int main(){
-
-	long long q;
-
-	cin >>q;
-
-	long double d;
-
-	struct tree* root=NULL;
-
-
-	for(long long i=0; i<q; i++ ){
-
-		long long n;
-		cin>>n;
-		string a[n];
-		ll ctr=-1;
-		int arr[n];
-		REP(j, 0, n){
-		      arr[j]=-1;
-		}
-		while(n--){
-
-                  int flag=0;
-                  int err=0;
-                  int asf=0;
-                  int pos=-1;
-                  string expr;
-                  cin>>expr;
-
-                  REP(k, 0, expr.length()){
-
-                        if(expr[k]=='='){
-
-                              asf=1;
-
-                              REP(j, 0, ctr+1){
-                                    if(expr.substr(0, k)==a[j]){
-                                          flag=1;
-                                          pos=j;
-                                          break;
-                                    }
-                              }
-
-                              if(flag==0){
-                                    ctr++;
-                                    a[ctr]=expr.substr(0, k);
-                                    pos=ctr;
-                              }
-
-                              root=maketree(expr.substr(k+1));
-
+      ll n;
+      cin>>n;
+      while(n--){
+            ll t;
+            cin>>t;
+            while(t--){
+                  flag=0;
+                  string s;
+                  cin>>s;
+                  ll f=0;
+                  REP(i,0,s.length()){
+                        if(s[i]=='='){
+                              f=1;
+                              struct tree *root=createTree();
+                              vector<string> kel=postfix(s.substr(i+1));
+                              makeTree(&root, kel);
+                              if(flag==1)var[s.substr(0,i)]=INF;
+                              else var[s.substr(0,i)]=evaluate(root);
                               break;
                         }
-
                   }
-
-                  if(asf==1){
-                  		int* val=eval(root, a, arr, &err, ctr);
-                  		free(root);
-                  		//cout<<*val<<endl;
-                        //arr[pos]=*(eval(root, a, arr, &err, ctr));
-                        if(err==0 ){
-                        	//cout<<*val<<endl;
-                        	arr[pos]=*val;
-                            //cout<<arr[pos]<<endl;
-
-                        }
-                        else if(flag==0){
-                        	//cout<<flag<<endl;
-                        	ctr--;	
-                        }
-                        //cout<<pos<<" "<<a[pos]<<" "<<arr[pos]<<endl;
-                  }
-
-                  else{
-//cout<<arr[0]<<endl;
-                        root=maketree(expr);
-
-                        int* val=eval(root, a, arr, &err, ctr);
-                        free(root);
-
-                        if(err==1)cout<<"CANT BE EVALUATED"<<endl;
-                        else cout<<*val<<endl;
-
-                  }
+                  if(f==1)continue;
+                  vector<string> post =postfix(s);
+                  struct tree *root=createTree();
+                  makeTree(&root,post);
+                  ll ans=evaluate(root);
+                  if(flag==1){cout<<"CANT BE EVALUATED"<<endl;continue;}
+                  cout<<ans<<'\n';
             }
-
-	}
-
-	return 0;
+            var.clear();
+      }
 }
