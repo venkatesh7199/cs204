@@ -1,12 +1,17 @@
 #include<bits/stdc++.h>
 using namespace std;
+
 #define ll long long
 #define REP(i,a,b) for(ll i=a;i<b;i++)
+#define MP make_pair
+#define PB push_back
+#define N 100001
+#define HOLE 1000000007
 
 ll fn(ll x,ll rn[])
 {
       if(rn[x]==x) return x;
-      else rn[x]=fn(rn[x],rn);
+      else return rn[x]=fn(rn[x],rn);
 }
 
 void un(ll x,ll y,ll rn[],ll sz[])
@@ -22,37 +27,47 @@ void un(ll x,ll y,ll rn[],ll sz[])
 
 int main()
 {
-      ll n,m;
-      cin>>n>>m;
-      ll k;
-      cin>>k;
-      map<pair<ll,ll>,ll> mp;
-      ll rn[k];
-      ll sz[k];
-      REP(i,0,k)
-      {
-            ll x,y;
-            cin>>x>>y;
-            mp[make_pair(x,y)]=i;
-            rn[i]=i;
-            sz[i]=1;
-      }
-      for(auto it:mp)
-      {
-            if(mp.count(make_pair((it.first).first+1,(it.first).second))==1) un(it.second,mp[make_pair((it.first).first+1,(it.first).second)],rn,sz);
-            if(mp.count(make_pair((it.first).first-1,(it.first).second))==1) un(it.second,mp[make_pair((it.first).first-1,(it.first).second)],rn,sz);
-            if(mp.count(make_pair((it.first).first,(it.first).second+1))==1) un(it.second,mp[make_pair((it.first).first,(it.first).second+1)],rn,sz);
-            if(mp.count(make_pair((it.first).first,(it.first).second-1))==1) un(it.second,mp[make_pair((it.first).first,(it.first).second-1)],rn,sz);
-      }
-      ll max_siez=0;
-      REP(i,0,k)
-      {
-            if(sz[i]>max_siez)
-            {
-                  max_siez=sz[i];
-            }
-      }
-      cout<<max_siez;
+    ll n,m;
+    cin>>n>>m;
+    ll k,w,j;
 
-      return 0;
+    pair<ll, pair <ll,ll> > edges[m];
+
+    ll rn[n];
+    ll sz[n];
+
+    ll prod=1;
+
+    REP(i,0,n+1){
+        rn[i]=i;
+        sz[i]=1;
+    }
+
+    REP(i,0,m){
+
+        cin>>w>>j>>k;
+        edges[i]=MP(-k,MP(w,j));
+
+    }
+
+    sort(edges, edges+m);
+
+    REP(i,0,m){
+
+        if(fn(edges[i].second.first,rn) == fn(edges[i].second.second,rn) )
+            continue;
+        else{
+
+            prod=(prod*(-edges[i].first))%HOLE;
+
+             un (edges[i].second.first, edges[i].second.second, rn, sz );
+
+        }
+
+    }
+
+    cout<<prod<<endl;
+
+
+    return 0;
 }
